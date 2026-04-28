@@ -1,0 +1,22 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Spinner } from "../../../components/ui/spinner.tsx";
+
+export default function AuthCallback() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      navigate("/admin", { replace: true });
+    }, 1500);
+
+    return () => window.clearTimeout(timer);
+  }, [navigate]);
+
+  return (
+    <div className="flex flex-col items-center justify-center h-svh gap-4">
+      <Spinner className="size-8 border-white/20 border-t-white/80" />
+      <p className="text-sm text-muted-foreground">Loading...</p>
+    </div>
+  );
+}
