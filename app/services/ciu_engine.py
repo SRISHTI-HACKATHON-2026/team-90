@@ -9,31 +9,25 @@ def get_resource_status(value):
 
 
 def calculate_ciu(water, waste, energy):
-    """CIU = Community Impact Unit. Higher = better community health.
-    Calculated as 100 minus total resource usage, clamped to 0-100."""
-    ciu = 100 - (water + waste + energy)
-    ciu = max(0, min(100, ciu))
+    """Compute CIU from normalized resource usage values."""
+    total = water + waste + energy
 
-    # Global status derived from per-resource assessments
-    water_status = get_resource_status(water)
-    waste_status = get_resource_status(waste)
-    energy_status = get_resource_status(energy)
+    if total == 0:
+        return 0, "LOW", "Clear", 0, 0, 0
 
-    statuses = [water_status, waste_status, energy_status]
+    # Normalize inputs to avoid CIU collapse when raw values are large.
+    water_score = min(water / 100, 1)
+    waste_score = min(waste / 100, 1)
+    energy_score = min(energy / 100, 1)
 
-    if "critical" in statuses:
-        status = "red"
-    elif "moderate" in statuses:
-        status = "yellow"
-    else:
-        status = "green"
+    # Average normalized scores, then convert to percentage.
+    ciu = (water_score + waste_score + energy_score) / 3
+    ciu = round(ciu * 100, 2)
 
-    # Weather reflects overall system health
-    if status == "green":
-        weather = "sunny"
-    elif status == "yellow":
-        weather = "cloudy"
-    else:
-        weather = "storm"
+    status = "LOW"
+    if ciu > 70:
+        status = "HIGH"
+    elif ciu > 40:
+        status = "MEDIUM"
 
-    return ciu, status, weather, water_status, waste_status, energy_status
+    return ciu, status, "Stable", water_score, waste_score, energy_score

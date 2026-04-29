@@ -105,8 +105,13 @@ export default function EcoLedger() {
 
   const handleMakeCall = async () => {
     try {
-      await fetch("http://127.0.0.1:5000/make-call");
-      console.log("IVR call requested");
+      const res = await fetch("http://127.0.0.1:5000/make-call");
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        console.error("Call trigger error:", data.error ?? `HTTP ${res.status}`);
+        return;
+      }
+      console.log("IVR call requested", data);
     } catch (err) {
       console.error("Call trigger error:", err);
     }

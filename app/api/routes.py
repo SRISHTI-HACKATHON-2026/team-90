@@ -57,7 +57,9 @@ def health_check():
 @router.get("/make-call")
 def make_call():
     try:
-        print("CALL triggered")
+        print("CALL TRIGGERED")
+        print("CALL TO:", DEMO_CALL_TO)
+        print("IVR URL:", IVR_URL)
         if not DEMO_CALL_TO or not TWILIO_NUMBER or not IVR_URL:
             return {"error": "Missing Twilio environment variables"}
         call = client.calls.create(
@@ -67,6 +69,7 @@ def make_call():
         )
         return {"status": "calling", "sid": call.sid}
     except Exception as e:
+        print("CALL ERROR:", str(e))
         return {"error": str(e)}
 
 
@@ -87,6 +90,29 @@ def send_demo_sms():
         return {"status": "sent", "sid": message.sid}
     except Exception as e:
         return {"error": str(e)}
+
+
+# ==============================
+# SMS SIMULATION (KIOSK DEMO)
+# ==============================
+@router.get("/simulate-sms")
+def simulate_sms(resource: str = "water", value: int = 120, db: Session = Depends(get_db)):
+    if resource not in {"water", "waste", "energy"}:
+        resource = "water"
+
+    log = Log(
+        phone="demo_user",
+        sender="captain",
+        type="verified",
+        resource=resource,
+        value=value,
+        timestamp=datetime.utcnow(),
+    )
+
+    db.add(log)
+    db.commit()
+
+    return {"status": "simulated", "resource": resource, "value": value}
 
 
 # ==============================
@@ -249,3 +275,37 @@ def get_logs(db: Session = Depends(get_db)):
         }
         for l in logs
     ]
+
+
+# ==============================
+# RESET DATA (DEV UTILITY)
+# ==============================
+@router.get("/reset-data")
+def reset_data(seed_demo: bool = True, db: Session = Depends(get_db)):
+    # Clear all logs first so dashboard starts from a clean baseline.
+    db.query(Log).delete()
+    db.commit()
+
+    if not seed_demo:
+        return {"status": "all logs cleared"}
+
+    demo_data = [
+        ("water", 40),
+        ("waste", 25),
+        ("energy", 35),
+    ]
+
+    for resource, value in demo_data:
+        db.add(
+            Log(
+                phone="demo_user",
+                sender="captain",
+                type="verified",
+                resource=resource,
+                value=value,
+                timestamp=datetime.utcnow(),
+            )
+        )
+
+    db.commit()
+    return {"status": "reset with demo data"}

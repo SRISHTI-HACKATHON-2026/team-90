@@ -2,7 +2,8 @@ import { useState } from "react";
 
 type SendMode = "verified" | "observation";
 
-const BACKEND_URL = "http://127.0.0.1:5000/send-sms";
+const BACKEND_URL = "http://127.0.0.1:5000/simulate-sms";
+const RESOURCES = ["water", "waste", "energy"] as const;
 
 export default function FakeSMSPanel() {
   const [message, setMessage] = useState("");
@@ -11,16 +12,18 @@ export default function FakeSMSPanel() {
   const [sending, setSending] = useState(false);
 
   const sendPayload = async (mode: SendMode, resource?: string, value?: number) => {
-    void mode;
-    void resource;
-    void value;
     setSending(true);
     setSent(false);
 
     try {
-      await fetch(BACKEND_URL);
+      const fallbackResource = RESOURCES[Math.floor(Math.random() * RESOURCES.length)];
+      const selectedResource = mode === "verified" && resource ? resource : fallbackResource;
+      const selectedValue = mode === "verified" && value !== undefined ? value : 120;
+      const url = `${BACKEND_URL}?resource=${selectedResource}&value=${selectedValue}`;
 
-      setLastMessage(mode === "verified" ? `${resource} ${value}` : message);
+      await fetch(url);
+
+      setLastMessage(`${selectedResource} ${selectedValue}`);
       setMessage("");
       setSent(true);
     } catch (error) {
