@@ -85,3 +85,63 @@ export function getMockData(): MockData {
   return { water, waste, energy, status, worst, trend, history, streak, isOnline, log };
 }
 
+/* ── LIVE DATA FROM BACKEND ── */
+
+const API_BASE = "http://127.0.0.1:5000";
+
+function valueToLevel(value: number): ResourceLevel {
+  if (value <= 30) return "low";
+  if (value <= 70) return "medium";
+  return "high";
+}
+
+export async function fetchLiveData(): Promise<MockData | null> {
+  try {
+    const res = await fetch(`${API_BASE}/get-status`);
+    if (!res.ok) return null;
+    const json = await res.json();
+
+    console.log("[Eco-Ledger] /get-status →", json);
+
+    const water  = valueToLevel(json.water  ?? 0);
+    const waste  = valueToLevel(json.waste  ?? 0);
+    const energy = valueToLevel(json.energy ?? 0);
+
+    const status: SystemStatus = (["green", "yellow", "red"] as const).includes(json.status)
+      ? (json.status as SystemStatus)
+      : computeStatus(water, waste, energy);
+
+    const worst: ResourceKey =
+      json.worst && ["water", "waste", "energy"].includes(json.worst)
+        ? (json.worst as ResourceKey)
+        : computeWorst(water, waste, energy);
+
+    const trend: Trend = json.trend === "up" ? "up" : "down";
+
+    // These fields aren't provided by the backend — derive sensibly
+    const history: WeatherSymbol[] = status === "green"
+      ? ["sun", "sun", "sun", "cloud", "sun"]
+      : status === "yellow"
+        ? ["cloud", "sun", "cloud", "cloud", "sun"]
+        : ["storm", "cloud", "storm", "cloud", "storm"];
+    const streak = computeStreak(history);
+
+    const log: LogEntry = {
+      text: json.message ?? "No data yet",
+      verifiedBy: "System",
+      timeAgo: "just now",
+    };
+
+    return {
+      water, waste, energy,
+      status, worst, trend,
+      history, streak,
+      isOnline: true,
+      log,
+    };
+  } catch (err) {
+    console.warn("[Eco-Ledger] Backend unreachable, using mock data", err);
+    return null;
+  }
+}
+

@@ -16,8 +16,11 @@ class Log(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     phone = Column(String)
+    sender = Column(String, nullable=True)
+    type = Column(String, nullable=True)          # "observation" or "verified"
     resource = Column(String)
-    value = Column(Integer)
+    value = Column(Integer, default=0)
+    message = Column(String, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
 

@@ -6,9 +6,9 @@ import { toast } from "sonner";
 type TargetGroup = "all" | "captains" | "red_zones";
 
 const TARGET_OPTIONS: { id: TargetGroup; label: string; description: string; count: number; icon: React.ReactNode }[] = [
-  { id: "all",       label: "All Users",      description: "Entire settlement network", count: 3230, icon: <Users size={14} /> },
-  { id: "captains",  label: "Captains Only",  description: "Verified zone reporters",   count: 47,   icon: <Shield size={14} /> },
-  { id: "red_zones", label: "Red Zones Only", description: "Critical & warning clusters only",  count: 4,    icon: <AlertTriangle size={14} /> },
+  { id: "all", label: "All Users", description: "Entire settlement network", count: 3230, icon: <Users size={14} /> },
+  { id: "captains", label: "Captains Only", description: "Verified zone reporters", count: 47, icon: <Shield size={14} /> },
+  { id: "red_zones", label: "Red Zones Only", description: "Critical & warning clusters only", count: 4, icon: <AlertTriangle size={14} /> },
 ];
 
 const QUICK_TRIGGERS = [
@@ -19,17 +19,17 @@ const QUICK_TRIGGERS = [
 ];
 
 const MESSAGE_HISTORY = [
-  { id: "m1", timestamp: "2026-04-28T12:00:00Z", target: "All Users",     message: "DAILY REPORT DUE: Submission deadline in 2 hours. Please submit readings.", reach: 3180 },
-  { id: "m2", timestamp: "2026-04-28T09:15:00Z", target: "Red Zones",    message: "CRITICAL: Cluster-D and Cluster-I below threshold. Captains investigate.", reach: 180 },
+  { id: "m1", timestamp: "2026-04-28T12:00:00Z", target: "All Users", message: "DAILY REPORT DUE: Submission deadline in 2 hours. Please submit readings.", reach: 3180 },
+  { id: "m2", timestamp: "2026-04-28T09:15:00Z", target: "Red Zones", message: "CRITICAL: Cluster-D and Cluster-I below threshold. Captains investigate.", reach: 180 },
   { id: "m3", timestamp: "2026-04-27T18:30:00Z", target: "Captains Only", message: "SITREP: Weekly sync call scheduled for Friday 10:00 WAT. Attendance mandatory.", reach: 45 },
 ];
 
 const GLASS_CARD = { background: "rgba(30,41,59,0.5)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.08)" } as const;
 
 const SEVERITY_COLORS: Record<string, { color: string; bg: string; border: string }> = {
-  green: { color: "#10B981", bg: "rgba(16,185,129,0.08)",  border: "rgba(16,185,129,0.25)" },
-  amber: { color: "#F59E0B", bg: "rgba(245,158,11,0.08)",  border: "rgba(245,158,11,0.25)" },
-  red:   { color: "#EF4444", bg: "rgba(239,68,68,0.08)",   border: "rgba(239,68,68,0.25)" },
+  green: { color: "#10B981", bg: "rgba(16,185,129,0.08)", border: "rgba(16,185,129,0.25)" },
+  amber: { color: "#F59E0B", bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.25)" },
+  red: { color: "#EF4444", bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.25)" },
 };
 
 export function BroadcastControl() {

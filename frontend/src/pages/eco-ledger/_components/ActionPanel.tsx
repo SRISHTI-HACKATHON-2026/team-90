@@ -2,8 +2,8 @@ import type { ResourceKey } from "../../../lib/mockData.ts";
 import { ActionIcon } from "./Icons.tsx";
 
 const ACTION_TEXT: Record<ResourceKey, string> = {
-  water:  "USE LESS WATER",
-  waste:  "CLEAR WASTE AREA",
+  water: "USE LESS WATER",
+  waste: "CLEAR WASTE AREA",
   energy: "SAVE ELECTRICITY",
 };
 

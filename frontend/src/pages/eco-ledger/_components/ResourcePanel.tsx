@@ -2,33 +2,33 @@ import type { ResourceKey, ResourceLevel } from "../../../lib/mockData.ts";
 import { JerrycanIcon, TrashBagIcon, LightbulbIcon } from "./Icons.tsx";
 
 const LABELS: Record<ResourceKey, string> = {
-  water:  "WATER",
-  waste:  "WASTE",
+  water: "WATER",
+  waste: "WASTE",
   energy: "ENERGY",
 };
 
 const STATUS_FACE: Record<ResourceLevel, string> = {
-  low:    "😊",
+  low: "😊",
   medium: "😐",
-  high:   "😰",
+  high: "😰",
 };
 
 const STATUS_COLOR: Record<ResourceLevel, string> = {
-  low:    "#00E676",
+  low: "#00E676",
   medium: "#FFD000",
-  high:   "#FF4B4B",
+  high: "#FF4B4B",
 };
 
 function ResourceIcon({ resource, size, color }: { resource: ResourceKey; size: number; color: string }) {
-  if (resource === "water")  return <JerrycanIcon  size={size} color={color} />;
-  if (resource === "waste")  return <TrashBagIcon  size={size} color={color} />;
+  if (resource === "water") return <JerrycanIcon size={size} color={color} />;
+  if (resource === "waste") return <TrashBagIcon size={size} color={color} />;
   return <LightbulbIcon size={size} color={color} />;
 }
 
 type Props = { resource: ResourceKey; level: ResourceLevel; isWorst: boolean };
 
 export default function ResourcePanel({ resource, level, isWorst }: Props) {
-  const color    = STATUS_COLOR[level];
+  const color = STATUS_COLOR[level];
   const iconSize = isWorst ? 52 : 40;
 
   return (
@@ -59,4 +59,3 @@ export default function ResourcePanel({ resource, level, isWorst }: Props) {
     </div>
   );
 }
-

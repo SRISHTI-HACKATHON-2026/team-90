@@ -38,13 +38,13 @@ export function LightbulbIcon({ size = 48, color = "#e0e0e0" }: { size?: number;
       <circle cx="24" cy="20" r="11" fill={color} opacity="0.9" />
       {/* Base segments */}
       <rect x="19" y="31" width="10" height="4" rx="1" fill={color} opacity="0.75" />
-      <rect x="20" y="35" width="8"  height="3" rx="1" fill={color} opacity="0.6"  />
+      <rect x="20" y="35" width="8" height="3" rx="1" fill={color} opacity="0.6" />
       {/* Rays */}
-      <line x1="24" y1="5"  x2="24" y2="2"  stroke={color} strokeWidth="2" strokeLinecap="round" />
-      <line x1="35" y1="9"  x2="37" y2="7"  stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <line x1="24" y1="5" x2="24" y2="2" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <line x1="35" y1="9" x2="37" y2="7" stroke={color} strokeWidth="2" strokeLinecap="round" />
       <line x1="38" y1="20" x2="41" y2="20" stroke={color} strokeWidth="2" strokeLinecap="round" />
-      <line x1="13" y1="9"  x2="11" y2="7"  stroke={color} strokeWidth="2" strokeLinecap="round" />
-      <line x1="10" y1="20" x2="7"  y2="20" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <line x1="13" y1="9" x2="11" y2="7" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <line x1="10" y1="20" x2="7" y2="20" stroke={color} strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -89,7 +89,7 @@ export function ActionIcon({ resource, size = 64 }: ActionIconProps) {
         <ellipse cx="36" cy="22" rx="5" ry="6" fill="#e0e0e0" />
         {/* Bin */}
         <rect x="44" y="28" width="14" height="20" rx="2" fill="#e0e0e0" />
-        <rect x="42" y="26" width="18" height="4"  rx="2" fill="#e0e0e0" />
+        <rect x="42" y="26" width="18" height="4" rx="2" fill="#e0e0e0" />
         {/* Arrow down into bin */}
         <line x1="36" y1="28" x2="48" y2="36" stroke="#00E676" strokeWidth="2.5" strokeLinecap="round" />
         <polyline points="44,35 48,36 48,32" fill="none" stroke="#00E676" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -121,4 +121,3 @@ export function ActionIcon({ resource, size = 64 }: ActionIconProps) {
     </svg>
   );
 }
-

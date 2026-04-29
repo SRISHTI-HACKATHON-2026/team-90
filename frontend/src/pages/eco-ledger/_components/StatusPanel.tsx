@@ -1,9 +1,9 @@
 import type { SystemStatus } from "../../../lib/mockData.ts";
 
 const CFG: Record<SystemStatus, { color: string; face: string; word: string }> = {
-  green:  { color: "#00E676", face: "😊", word: "GOOD"     },
-  yellow: { color: "#FFD000", face: "😐", word: "WARNING"  },
-  red:    { color: "#FF4B4B", face: "😰", word: "CRITICAL" },
+  green: { color: "#00E676", face: "😊", word: "GOOD" },
+  yellow: { color: "#FFD000", face: "😐", word: "WARNING" },
+  red: { color: "#FF4B4B", face: "😰", word: "CRITICAL" },
 };
 
 export default function StatusPanel({ status }: { status: SystemStatus }) {
@@ -42,4 +42,3 @@ export default function StatusPanel({ status }: { status: SystemStatus }) {
     </div>
   );
 }
-

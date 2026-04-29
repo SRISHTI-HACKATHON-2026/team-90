@@ -30,7 +30,7 @@ const zones: Zone[] = [
   { id: "Cluster-L", population: 0, reportingAccuracy: 0, ciuDensity: 0, status: "dark", col: 3, row: 2, trend: [{ hour: "06h", value: 8 }, { hour: "09h", value: 3 }, { hour: "12h", value: 0 }, { hour: "15h", value: 0 }, { hour: "18h", value: 0 }] },
 ];
 
-const STATUS_CFG: Record<ZoneStatus, { label: string; color: string; glow: string; bg: string; border: string; icon: any }> = {
+const STATUS_CFG: Record<ZoneStatus, { label: string; color: string; glow: string; bg: string; border: string; icon: React.ReactNode }> = {
   healthy: { label: "Healthy", color: "#10B981", glow: "rgba(16,185,129,0.4)", bg: "rgba(16,185,129,0.07)", border: "rgba(16,185,129,0.25)", icon: <CheckCircle2 size={10} /> },
   warning: { label: "Warning", color: "#F59E0B", glow: "rgba(245,158,11,0.4)", bg: "rgba(245,158,11,0.07)", border: "rgba(245,158,11,0.25)", icon: <AlertTriangle size={10} /> },
   critical: { label: "Critical", color: "#EF4444", glow: "rgba(239,68,68,0.5)", bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.3)", icon: <AlertTriangle size={10} /> },
@@ -119,8 +119,8 @@ function ZoneCell({ zone }: { zone: Zone }) {
         boxShadow: hovered
           ? `0 0 20px ${cfg.glow}, 0 0 0 1px ${cfg.border}`
           : isCritical
-          ? `0 0 16px ${cfg.glow}`
-          : "none",
+            ? `0 0 16px ${cfg.glow}`
+            : "none",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -204,7 +204,7 @@ export function SpatialAnalytics() {
             Spatial Analytics - Zonal Grid
           </span>
           <p className="text-[10px] mt-0.5" style={{ fontFamily: "JetBrains Mono, monospace", color: "rgba(255,255,255,0.25)" }}>
-            Hover any zone to inspect density, population & accuracy
+            Hover any zone to inspect density, population &amp; accuracy
           </p>
         </div>
         <div className="flex items-center gap-4">

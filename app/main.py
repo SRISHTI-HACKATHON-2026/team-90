@@ -1,12 +1,26 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+
 from app.api.routes import router
-from app.db.database import engine, Base   # 👈 ADD THIS
+from app.db.database import engine, Base
+from app.db.database import get_db
+
+from sqlalchemy import text
 
 app = FastAPI(title="Eco-Ledger")
 
 # 👇 CREATE TABLES (VERY IMPORTANT)
 Base.metadata.create_all(bind=engine)
+
+# 👇 SAFELY ADD NEW COLUMNS TO EXISTING TABLES
+with engine.connect() as conn:
+    for col, col_type in [("sender", "VARCHAR"), ("type", "VARCHAR"), ("message", "VARCHAR")]:
+        try:
+            conn.execute(text(f"ALTER TABLE logs ADD COLUMN {col} {col_type}"))
+            conn.commit()
+        except Exception:
+            conn.rollback()  # Column already exists, skip
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,6 +31,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+
 
 @app.get("/")
 def root():

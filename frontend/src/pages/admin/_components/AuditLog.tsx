@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Flag, AlertTriangle, CheckCircle2, Clock, Filter, Search, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
+import type { BackendLog } from "../page.tsx";
 
 type VerificationStatus = "verified" | "pending" | "flagged" | "rejected";
 type Category = "water" | "waste" | "energy";
@@ -18,32 +19,44 @@ interface LogEntry {
   flagReason?: string;
 }
 
-const generateLogs = (): LogEntry[] => [
-  { id: "L001", timestamp: "2026-04-28T14:32:11Z", source: "+234 803 4421 012", category: "waste",  value: 47,   unit: "kg",  rollingAvg: 38,  verificationStatus: "verified", zone: "Cluster-B" },
-  { id: "L002", timestamp: "2026-04-28T14:31:05Z", source: "+234 806 7712 334", category: "water",  value: 320,  unit: "L",   rollingAvg: 250, verificationStatus: "pending",  zone: "Cluster-C" },
-  { id: "L003", timestamp: "2026-04-28T14:30:44Z", source: "+234 801 9982 001", category: "energy", value: 14.2, unit: "kWh", rollingAvg: 11.8, verificationStatus: "verified", zone: "Cluster-A" },
-  { id: "L004", timestamp: "2026-04-28T14:29:33Z", source: "+234 808 1223 889", category: "waste",  value: 500,  unit: "kg",  rollingAvg: 39,  verificationStatus: "flagged",  zone: "Cluster-D", flagReason: "Value exceeds 25% threshold by 1182%" },
-  { id: "L005", timestamp: "2026-04-28T14:28:19Z", source: "+234 802 5543 667", category: "water",  value: 198,  unit: "L",   rollingAvg: 248, verificationStatus: "verified", zone: "Cluster-E" },
-  { id: "L006", timestamp: "2026-04-28T14:27:55Z", source: "+234 807 3312 445", category: "energy", value: 9.5,  unit: "kWh", rollingAvg: 11.2, verificationStatus: "verified", zone: "Cluster-J" },
-  { id: "L007", timestamp: "2026-04-28T14:26:40Z", source: "+234 805 8874 001", category: "waste",  value: 61,   unit: "kg",  rollingAvg: 41,  verificationStatus: "pending",  zone: "Cluster-G" },
-  { id: "L008", timestamp: "2026-04-28T14:25:22Z", source: "+234 803 1100 221", category: "water",  value: 415,  unit: "L",   rollingAvg: 255, verificationStatus: "flagged",  zone: "Cluster-C", flagReason: "62.7% spike above rolling average" },
-  { id: "L009", timestamp: "2026-04-28T14:24:10Z", source: "+234 806 4430 993", category: "energy", value: 13.1, unit: "kWh", rollingAvg: 10.4, verificationStatus: "verified", zone: "Cluster-K" },
-  { id: "L010", timestamp: "2026-04-28T14:23:05Z", source: "+234 801 2299 554", category: "waste",  value: 28,   unit: "kg",  rollingAvg: 37,  verificationStatus: "verified", zone: "Cluster-H" },
-  { id: "L011", timestamp: "2026-04-28T14:22:45Z", source: "+234 809 6677 112", category: "water",  value: 900,  unit: "L",   rollingAvg: 265, verificationStatus: "rejected", zone: "Cluster-I", flagReason: "Impossible value — flagged by system" },
-  { id: "L012", timestamp: "2026-04-28T14:21:31Z", source: "+234 804 3321 009", category: "energy", value: 16.8, unit: "kWh", rollingAvg: 10.9, verificationStatus: "flagged",  zone: "Cluster-B", flagReason: "54.1% spike above rolling average" },
-];
+const UNIT_MAP: Record<string, string> = { water: "L", waste: "kg", energy: "kWh" };
+const AVG_MAP: Record<string, number> = { water: 250, waste: 40, energy: 12 };
+
+function mapBackendLogs(raw: BackendLog[]): LogEntry[] {
+  return raw.map((l, i) => {
+    const resource = (l.resource ?? "water") as Category;
+    const value = l.value ?? 0;
+    const avg = AVG_MAP[resource] ?? 30;
+    const status: VerificationStatus =
+      l.type === "verified" ? "verified"
+        : l.type === "observation" ? "pending"
+          : "pending";
+    return {
+      id: `API-${i}`,
+      timestamp: l.time ?? new Date().toISOString(),
+      source: l.sender ?? l.phone ?? "Unknown",
+      category: (["water", "waste", "energy"].includes(resource) ? resource : "water") as Category,
+      value,
+      unit: UNIT_MAP[resource] ?? "",
+      rollingAvg: avg,
+      verificationStatus: status,
+      zone: "Live",
+      flagReason: l.message ?? undefined,
+    };
+  });
+}
 
 const CAT_CFG: Record<Category, { color: string; bg: string }> = {
-  water:  { color: "#38bdf8", bg: "rgba(56,189,248,0.1)" },
-  waste:  { color: "#F59E0B", bg: "rgba(245,158,11,0.1)" },
+  water: { color: "#38bdf8", bg: "rgba(56,189,248,0.1)" },
+  waste: { color: "#F59E0B", bg: "rgba(245,158,11,0.1)" },
   energy: { color: "#10B981", bg: "rgba(16,185,129,0.1)" },
 };
 
 const STAT_CFG: Record<VerificationStatus, { color: string; bg: string; border: string; icon: React.ReactNode }> = {
-  verified: { color: "#10B981", bg: "rgba(16,185,129,0.1)",  border: "rgba(16,185,129,0.25)", icon: <CheckCircle2 size={10} /> },
-  pending:  { color: "#F59E0B", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.25)", icon: <Clock size={10} /> },
-  flagged:  { color: "#F59E0B", bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.2)",  icon: <AlertTriangle size={10} /> },
-  rejected: { color: "#EF4444", bg: "rgba(239,68,68,0.08)",  border: "rgba(239,68,68,0.2)",  icon: <Flag size={10} /> },
+  verified: { color: "#10B981", bg: "rgba(16,185,129,0.1)", border: "rgba(16,185,129,0.25)", icon: <CheckCircle2 size={10} /> },
+  pending: { color: "#F59E0B", bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.25)", icon: <Clock size={10} /> },
+  flagged: { color: "#F59E0B", bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.2)", icon: <AlertTriangle size={10} /> },
+  rejected: { color: "#EF4444", bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.2)", icon: <Flag size={10} /> },
 };
 
 const GLASS_CARD = {
@@ -52,7 +65,7 @@ const GLASS_CARD = {
   border: "1px solid rgba(255,255,255,0.08)",
 } as const;
 
-function isSpike(value: number, avg: number) { return (value - avg) / avg > 0.25; }
+function isSpike(value: number, avg: number) { return avg > 0 && (value - avg) / avg > 0.25; }
 function formatTs(iso: string) {
   return new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
 }
@@ -60,11 +73,50 @@ function formatTs(iso: string) {
 const HEADERS = ["Timestamp", "Source", "Zone", "Category", "Value", "Δ Avg", "Status", "Action"];
 const COL_GRID = "grid-cols-[130px_155px_90px_95px_80px_95px_1fr_60px]";
 
-export function AuditLog() {
-  const [logs, setLogs] = useState<LogEntry[]>(generateLogs);
+// FIX: Use the correct FastAPI port (5000) and the /logs endpoint.
+const API_BASE = "http://127.0.0.1:5000";
+
+export function AuditLog({ backendLogs }: { backendLogs: BackendLog[] }) {
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<Category | "all">("all");
   const [statusFilter, setStatusFilter] = useState<VerificationStatus | "all">("all");
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLogs = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/logs`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      console.log("AUDIT LOGS:", data);
+      setLogs(mapBackendLogs(data));
+      setError(null);
+    } catch (err) {
+      console.error("Audit log fetch error:", err);
+      // FIX: Fall back to parent-provided logs so the table isn't blank
+      // even if the direct fetch fails (e.g. CORS in dev).
+      if (backendLogs?.length) {
+        setLogs(mapBackendLogs(backendLogs));
+      }
+      setError(err instanceof Error ? err.message : "Failed to fetch logs");
+    }
+  };
+
+  useEffect(() => {
+    // Initial fetch
+    fetchLogs();
+
+    // FIX: Poll every 5 seconds so new IVR/SMS entries appear without refresh
+    const interval = setInterval(fetchLogs, 5000);
+    return () => clearInterval(interval);
+  }, [backendLogs]);
+
+  // FIX: Re-run if parent pushes new backendLogs (e.g. on first load race condition)
+  useEffect(() => {
+    if (logs.length === 0 && backendLogs?.length) {
+      setLogs(mapBackendLogs(backendLogs));
+    }
+  }, [backendLogs]);
 
   const flagEntry = (id: string) => {
     setLogs((prev) =>
@@ -81,6 +133,17 @@ export function AuditLog() {
 
   return (
     <section className="space-y-3">
+      {/* FIX: Show error banner if /logs fetch failed, so it's visible during debugging */}
+      {error && (
+        <div
+          className="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
+          style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#EF4444", fontFamily: "JetBrains Mono, monospace" }}
+        >
+          <AlertTriangle size={12} />
+          API error: {error} — showing fallback data
+        </div>
+      )}
+
       <div className="rounded-xl p-3 flex items-center gap-3 flex-wrap" style={GLASS_CARD}>
         <div
           className="flex items-center gap-2 flex-1 min-w-48 rounded-lg px-3 py-1.5"
@@ -148,6 +211,11 @@ export function AuditLog() {
         </div>
 
         <div className="overflow-auto" style={{ maxHeight: "calc(100vh - 280px)" }}>
+          {filtered.length === 0 && (
+            <div className="px-4 py-8 text-center text-xs" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "JetBrains Mono, monospace" }}>
+              No audit logs found.
+            </div>
+          )}
           {filtered.map((log, idx) => {
             const catCfg = CAT_CFG[log.category];
             const stCfg = STAT_CFG[log.verificationStatus];
@@ -164,10 +232,10 @@ export function AuditLog() {
                   background: log.verificationStatus === "flagged"
                     ? "rgba(245,158,11,0.04)"
                     : log.verificationStatus === "rejected"
-                    ? "rgba(239,68,68,0.05)"
-                    : isEven
-                    ? "rgba(255,255,255,0.015)"
-                    : "transparent",
+                      ? "rgba(239,68,68,0.05)"
+                      : isEven
+                        ? "rgba(255,255,255,0.015)"
+                        : "transparent",
                   borderBottom: "1px solid rgba(255,255,255,0.04)",
                 }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(16,185,129,0.04)"; }}
@@ -175,8 +243,8 @@ export function AuditLog() {
                   const bg = log.verificationStatus === "flagged"
                     ? "rgba(245,158,11,0.04)"
                     : log.verificationStatus === "rejected"
-                    ? "rgba(239,68,68,0.05)"
-                    : isEven ? "rgba(255,255,255,0.015)" : "transparent";
+                      ? "rgba(239,68,68,0.05)"
+                      : isEven ? "rgba(255,255,255,0.015)" : "transparent";
                   (e.currentTarget as HTMLDivElement).style.background = bg;
                 }}
               >
@@ -185,11 +253,11 @@ export function AuditLog() {
                 </span>
 
                 <span className="text-[11px] tabular-nums" style={{ fontFamily: "JetBrains Mono, monospace", color: "rgba(255,255,255,0.85)" }}>
-                  {log.source}
+                  {log.source || "-"}
                 </span>
 
                 <span className="text-[11px]" style={{ fontFamily: "JetBrains Mono, monospace", color: "rgba(255,255,255,0.45)" }}>
-                  {log.zone}
+                  {log.zone || "-"}
                 </span>
 
                 <span
@@ -211,7 +279,7 @@ export function AuditLog() {
                       textShadow: spike ? "0 0 8px rgba(239,68,68,0.5)" : "none",
                     }}
                   >
-                    {log.value}<span className="text-[9px] ml-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{log.unit}</span>
+                    {log.value ?? "-"}<span className="text-[9px] ml-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{log.unit || ""}</span>
                   </span>
                 </div>
 

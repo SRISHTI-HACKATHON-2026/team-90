@@ -1,4 +1,3 @@
-
 /** Sync / offline indicator */
 export default function SyncIndicator({ isOnline }: { isOnline: boolean }) {
   return (
@@ -31,4 +30,3 @@ export default function SyncIndicator({ isOnline }: { isOnline: boolean }) {
     </div>
   );
 }
-

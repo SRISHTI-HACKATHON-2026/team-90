@@ -1,9 +1,9 @@
 /** Voice button — large, accessible, bottom-right */
 
 const STATUS_MESSAGES: Record<string, string> = {
-  green:  "Our community status is Green. We are doing well. Keep saving water, waste, and energy.",
+  green: "Our community status is Green. We are doing well. Keep saving water, waste, and energy.",
   yellow: "Our community status is Yellow. We need to take action. Please follow the instructions on screen.",
-  red:    "Our community status is Red. This is critical. Immediate action is required. Please act now.",
+  red: "Our community status is Red. This is critical. Immediate action is required. Please act now.",
 };
 
 export default function VoiceButton({ status }: { status: "green" | "yellow" | "red" }) {
@@ -47,4 +47,3 @@ export default function VoiceButton({ status }: { status: "green" | "yellow" | "
     </button>
   );
 }
-
