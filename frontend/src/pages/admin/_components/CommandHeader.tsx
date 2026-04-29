@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Activity, Radio, Layers, BarChart3, Antenna, RefreshCw } from "lucide-react";
+import { Activity, Radio, Layers, BarChart3, Antenna, RefreshCw, MapPin, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 
-type Tab = "overview" | "audit" | "broadcast";
+type Tab = "overview" | "audit" | "broadcast" | "localities" | "resource_dividend";
 
 interface Props {
   activeTab: Tab;
@@ -13,6 +13,8 @@ const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "overview", label: "Command Overview", icon: <BarChart3 size={14} /> },
   { id: "audit", label: "Audit Log", icon: <Layers size={14} /> },
   { id: "broadcast", label: "Broadcast Control", icon: <Radio size={14} /> },
+  { id: "localities", label: "Localities", icon: <MapPin size={14} /> },
+  { id: "resource_dividend", label: "Resource Dividend", icon: <DollarSign size={14} /> },
 ];
 
 export function CommandHeader({ activeTab, onTabChange }: Props) {

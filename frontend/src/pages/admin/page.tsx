@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { CommandHeader } from "./_components/CommandHeader.tsx";
+import { Localities } from "./_components/Localities.tsx";
+import { ResourceDividend } from "./_components/ResourceDividend.tsx";
 import { PerformanceHeader } from "./_components/PerformanceHeader.tsx";
 import { SpatialAnalytics } from "./_components/SpatialAnalytics.tsx";
 import { AuditLog } from "./_components/AuditLog.tsx";
@@ -30,7 +32,7 @@ export type BackendLog = {
 };
 
 export default function AdminIndex() {
-  const [activeTab, setActiveTab] = useState<"overview" | "audit" | "broadcast">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "audit" | "broadcast" | "localities" | "resource_dividend">("overview");
   const [statusData, setStatusData] = useState<StatusData | null>(null);
   const [logs, setLogs] = useState<BackendLog[]>([]);
 
@@ -81,6 +83,8 @@ export default function AdminIndex() {
         )}
         {activeTab === "audit" && <AuditLog backendLogs={logs} />}
         {activeTab === "broadcast" && <BroadcastControl />}
+        {activeTab === "localities" && <Localities />}
+        {activeTab === "resource_dividend" && <ResourceDividend />}
       </main>
     </div>
   );

@@ -8,7 +8,18 @@ function deriveAnalytics(d: StatusData | null) {
   const water = d?.water ?? 0;
   const waste = d?.waste ?? 0;
   const energy = d?.energy ?? 0;
-  const ciu = d?.ciu_score ?? 0;
+
+  // Calculate resource score as average of normalized values
+  const resourceScore = (water + waste + energy) / 3;
+
+  // Mock participation and stability (temporary, not derived from backend)
+  const participation = 80; // % of active houses
+  const stability = 90;     // system stability / anomaly score
+
+  // Weighted CIU formula: 50% resource, 30% participation, 20% stability
+  const ciu = Math.round(
+    (resourceScore * 0.5) + (participation * 0.3) + (stability * 0.2)
+  );
 
   // Normalize CIU to 0-100 gauge range
   const ciuEfficiency = Math.min(Math.max(ciu, 0), 100);
@@ -176,7 +187,10 @@ export function PerformanceHeader({ statusData }: { statusData: StatusData | nul
       <section className="grid grid-cols-12 gap-3">
         <div className="col-span-3 rounded-xl p-4 flex flex-col" style={GLASS_CARD}>
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] uppercase tracking-widest" style={{ fontFamily: "Inter, sans-serif", color: "rgba(255,255,255,0.4)" }}>Global CIU Efficiency</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] uppercase tracking-widest" style={{ fontFamily: "Inter, sans-serif", color: "rgba(255,255,255,0.4)" }}>Global CIU Efficiency</span>
+              <span className="text-[8px] uppercase tracking-widest" style={{ fontFamily: "Inter, sans-serif", color: "rgba(255,255,255,0.25)" }}>Composite Score</span>
+            </div>
             <span className="text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wider" style={{ fontFamily: "JetBrains Mono, monospace", background: "rgba(16,185,129,0.1)", color: "#10B981", border: "1px solid rgba(16,185,129,0.2)" }}>Live</span>
           </div>
           <div className="flex-1 flex items-center justify-center">

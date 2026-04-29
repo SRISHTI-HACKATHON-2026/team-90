@@ -1,0 +1,1 @@
+export { ResourceDividend } from "./ResourceDivident.tsx";

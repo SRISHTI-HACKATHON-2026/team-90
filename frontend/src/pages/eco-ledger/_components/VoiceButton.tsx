@@ -1,3 +1,5 @@
+import { speak } from "../../../lib/speak.ts";
+
 /** Voice button — large, accessible, bottom-right */
 
 const STATUS_MESSAGES: Record<string, string> = {
@@ -6,19 +8,21 @@ const STATUS_MESSAGES: Record<string, string> = {
   red: "Our community status is Red. This is critical. Immediate action is required. Please act now.",
 };
 
-export default function VoiceButton({ status }: { status: "green" | "yellow" | "red" }) {
-  const speak = () => {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const msg = new SpeechSynthesisUtterance(STATUS_MESSAGES[status]);
-    msg.rate = 0.85;
-    msg.pitch = 1;
-    window.speechSynthesis.speak(msg);
+export default function VoiceButton({ status, ciuScore }: { status: "green" | "yellow" | "red"; ciuScore?: number }) {
+  const handleSpeak = () => {
+    let message = STATUS_MESSAGES[status];
+    
+    // Add CIU score if available
+    if (ciuScore !== undefined) {
+      message += ` Current CIU efficiency is ${Math.round(ciuScore)}.`;
+    }
+    
+    speak(message);
   };
 
   return (
     <button
-      onClick={speak}
+      onClick={handleSpeak}
       title="Hear status aloud"
       style={{
         position: "fixed",

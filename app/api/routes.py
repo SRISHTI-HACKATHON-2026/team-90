@@ -14,6 +14,7 @@ from app.db.database import get_db
 from app.models.models import Log
 from app.services.ciu_engine import calculate_ciu
 from app.utils.twilio_sms import send_sms
+from app.services.agent import analyze_locality, decide_action, select_targets
 
 router = APIRouter()
 
@@ -130,6 +131,50 @@ async def ivr():
     return Response(content=response, media_type="application/xml")
 
 
+@router.post("/ivr-issue")
+async def ivr_issue():
+    """IVR flow to report an issue type."""
+    response = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Gather numDigits="1" action="{BASE_URL}/ivr-issue/handle" method="POST">
+        <Say>Report an issue.</Say>
+        <Say>Press 1 for water leak. Press 2 for garbage buildup. Press 3 for drain blockage. Press 4 for other issues.</Say>
+    </Gather>
+</Response>"""
+    return Response(content=response, media_type="application/xml")
+
+
+@router.post("/ivr-issue/handle")
+async def ivr_issue_handle(request: Request, db: Session = Depends(get_db)):
+    form = await request.form()
+    digit = form.get("Digits", "")
+
+    mapping = {"1": "water_leak", "2": "garbage_buildup", "3": "drain_blockage"}
+    issue = mapping.get(digit, "other")
+
+    # Log observation using existing Log schema (store issue in message field)
+    log = Log(
+        phone="ivr_user",
+        sender="captain",
+        type="observation",
+        message=issue,
+        timestamp=datetime.utcnow(),
+    )
+
+    db.add(log)
+    db.commit()
+
+    say = "<Say>Your issue has been recorded. Thank you.</Say>"
+
+    response = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    {say}
+    <Hangup/>
+</Response>"""
+
+    return Response(content=response, media_type="application/xml")
+
+
 # ==============================
 # RESOURCE SELECT
 # ==============================
@@ -137,6 +182,13 @@ async def ivr():
 async def ivr_select(request: Request):
     form = await request.form()
     digit = form.get("Digits", "1")
+    # If user chose the new report flow, redirect to issue gather
+    if digit == "4":
+        response = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Redirect>{BASE_URL}/ivr-issue</Redirect>
+</Response>"""
+        return Response(content=response, media_type="application/xml")
 
     mapping = {"1": "water", "2": "waste", "3": "energy"}
     resource = mapping.get(digit, "water")
@@ -202,15 +254,12 @@ async def twilio_webhook(request: Request, db: Session = Depends(get_db)):
     match = re.match(r"(water|waste|energy)\s*[:\-]?\s*(\d+)", message)
 
     if match:
+        # Numeric resource report (existing behavior)
         resource = match.group(1)
         value = int(match.group(2))
         verified = True
         print(f"[SMS VERIFIED] resource={resource!r} value={value!r}")
-    else:
-        verified = False
-        print(f"[SMS OBSERVATION] message={message!r}")
 
-    if verified:
         log = Log(
             phone=sender,
             sender="captain",
@@ -220,19 +269,93 @@ async def twilio_webhook(request: Request, db: Session = Depends(get_db)):
             timestamp=datetime.utcnow(),
         )
     else:
-        log = Log(
-            phone=sender,
-            sender="resident",
-            type="observation",
-            message=message,
-            timestamp=datetime.utcnow(),
-        )
+        # No numeric report found — check for observation keywords
+        issue = None
+        if "leak" in message:
+            issue = "water_leak"
+        elif "garbage" in message:
+            issue = "garbage_buildup"
+        elif "drain" in message:
+            issue = "drain_blockage"
+
+        if issue:
+            print(f"[SMS OBSERVATION - KEYWORD] issue={issue!r}")
+            log = Log(
+                phone=sender,
+                sender="resident",
+                type="observation",
+                message=issue,
+                timestamp=datetime.utcnow(),
+            )
+        else:
+            print(f"[SMS OBSERVATION] message={message!r}")
+            log = Log(
+                phone=sender,
+                sender="resident",
+                type="observation",
+                message=message,
+                timestamp=datetime.utcnow(),
+            )
 
     db.add(log)
     db.commit()
     print(f"[SMS LOGGED] type={log.type!r} id={log.id}")
 
     return PlainTextResponse("Received")
+
+
+# ==============================
+
+# ==============================
+# AGENT HELPERS
+# ==============================
+def get_localities_data(db):
+    """Group logs by locality and track house reporting status."""
+    logs = db.query(Log).all()
+    
+    locality_map = {}
+    
+    for log in logs:
+        # Simple grouping for demo - all to Cluster A
+        locality = "Cluster A"
+        
+        if locality not in locality_map:
+            locality_map[locality] = {}
+        
+        phone = log.phone
+        
+        if phone not in locality_map[locality]:
+            locality_map[locality][phone] = {
+                "phone": phone,
+                "last_report": None
+            }
+        
+        locality_map[locality][phone]["last_report"] = log.timestamp
+    
+    result = []
+    
+    for name, houses in locality_map.items():
+        result.append({
+            "name": name,
+            "houses": list(houses.values())
+        })
+    
+    return result
+
+
+def trigger_call(phone):
+    """Trigger an IVR call to a phone number."""
+    try:
+        client.calls.create(
+            to=phone,
+            from_=TWILIO_NUMBER,
+            url=IVR_URL
+        )
+        print(f"[CALL TRIGGERED] phone={phone}")
+        return True
+    except Exception as e:
+        print(f"[CALL ERROR] phone={phone} error={str(e)}")
+        return False
 
 
 # ==============================
@@ -275,6 +398,42 @@ def get_logs(db: Session = Depends(get_db)):
         }
         for l in logs
     ]
+
+
+# ==============================
+# AGENT: LOCALITY ANALYSIS & CALL TRIGGER
+# ==============================
+@router.get("/agent/run")
+def run_agent(db: Session = Depends(get_db)):
+    """
+    AI Captain: Analyze locality participation and trigger IVR calls to inactive households.
+    """
+    localities = get_localities_data(db)
+    
+    results = []
+    
+    for loc in localities:
+        analysis = analyze_locality(loc)
+        action = decide_action(analysis)
+        
+        targets = []
+        
+        if action != "NO_ACTION":
+            targets = select_targets(loc)
+            
+            for t in targets:
+                trigger_call(t["phone"])
+        
+        results.append({
+            "locality": loc["name"],
+            "active": analysis["active"],
+            "total": analysis["total"],
+            "participation": round(analysis["participation"], 2),
+            "action": action,
+            "targets_called": len(targets)
+        })
+    
+    return {"agent_results": results}
 
 
 # ==============================

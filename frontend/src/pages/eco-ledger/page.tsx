@@ -7,6 +7,7 @@ import WeatherPanel from "./_components/WeatherPanel.tsx";
 import VerificationLog from "./_components/VerificationLog.tsx";
 import SyncIndicator from "./_components/SyncIndicator.tsx";
 import VoiceButton from "./_components/VoiceButton.tsx";
+import HindiSpeaker from "./_components/HindiSpeaker.tsx";
 import FakeSMSPanel from "../../components/FakeSMSPanel.tsx";
 import FloatingNav from "../../components/Floatingnav.tsx";
 
@@ -352,7 +353,10 @@ export default function EcoLedger() {
       </div>
 
       {/* ── VOICE BUTTON ── */}
-      <VoiceButton status={status} />
+      <VoiceButton status={status} ciuScore={data.ciu_score} />
+
+      {/* ── HINDI SPEAKER ── */}
+      <HindiSpeaker status={status} />
 
       <button
         type="button"

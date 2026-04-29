@@ -29,7 +29,7 @@ type Props = { resource: ResourceKey; level: ResourceLevel; isWorst: boolean };
 
 export default function ResourcePanel({ resource, level, isWorst }: Props) {
   const color = STATUS_COLOR[level];
-  const iconSize = isWorst ? 52 : 40;
+  const iconSize = isWorst ? 96 : 72;
 
   return (
     <div style={{
@@ -37,19 +37,19 @@ export default function ResourcePanel({ resource, level, isWorst }: Props) {
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      gap: 14,
+      gap: 18,
       height: "100%",
-      padding: "20px 12px",
+      padding: "28px 16px",
       borderTop: isWorst ? `3px solid ${color}` : "3px solid transparent",
       boxSizing: "border-box",
     }}>
       <ResourceIcon resource={resource} size={iconSize} color={isWorst ? color : "#555"} />
-      <span style={{ fontSize: isWorst ? "2rem" : "1.6rem", lineHeight: 1 }}>
+      <span style={{ fontSize: isWorst ? "3rem" : "2.4rem", lineHeight: 1 }}>
         {STATUS_FACE[level]}
       </span>
       <span style={{
         fontFamily: "'Inter', sans-serif",
-        fontSize: "0.55rem",
+        fontSize: "0.7rem",
         fontWeight: 700,
         letterSpacing: "0.3em",
         color: isWorst ? color : "#3a3a3a",
