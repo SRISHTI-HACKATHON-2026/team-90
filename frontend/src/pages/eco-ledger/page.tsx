@@ -8,6 +8,7 @@ import VerificationLog from "./_components/VerificationLog.tsx";
 import SyncIndicator from "./_components/SyncIndicator.tsx";
 import VoiceButton from "./_components/VoiceButton.tsx";
 import FakeSMSPanel from "../../components/FakeSMSPanel.tsx";
+import FloatingNav from "../../components/Floatingnav.tsx";
 
 /* ── API ── */
 
@@ -198,6 +199,7 @@ export default function EcoLedger() {
       // Full-screen emotional background tint
       backgroundImage: `radial-gradient(ellipse at 50% 0%, ${BG_TINT[status]} 0%, transparent 70%)`,
     }}>
+      <FloatingNav />
 
       {/* ── HEADER ── */}
       <div style={{

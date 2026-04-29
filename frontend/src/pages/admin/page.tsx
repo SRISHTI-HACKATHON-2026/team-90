@@ -4,6 +4,7 @@ import { PerformanceHeader } from "./_components/PerformanceHeader.tsx";
 import { SpatialAnalytics } from "./_components/SpatialAnalytics.tsx";
 import { AuditLog } from "./_components/AuditLog.tsx";
 import { BroadcastControl } from "./_components/BroadcastControl.tsx";
+import FloatingNav from "../../components/Floatingnav.tsx";
 
 const API_BASE = "http://127.0.0.1:5000";
 
@@ -69,6 +70,7 @@ export default function AdminIndex() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <FloatingNav />
       <CommandHeader activeTab={activeTab} onTabChange={setActiveTab} />
       <main className="flex-1 overflow-auto p-4 space-y-4">
         {activeTab === "overview" && (
