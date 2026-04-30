@@ -8,7 +8,7 @@ import { AuditLog } from "./_components/AuditLog.tsx";
 import { BroadcastControl } from "./_components/BroadcastControl.tsx";
 import FloatingNav from "../../components/Floatingnav.tsx";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+const API_BASE = import.meta.env.VITE_API_URL 
 
 export type StatusData = {
   water: number;
