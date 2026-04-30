@@ -74,7 +74,7 @@ const HEADERS = ["Timestamp", "Source", "Zone", "Category", "Value", "Δ Avg", "
 const COL_GRID = "grid-cols-[130px_155px_90px_95px_80px_95px_1fr_60px]";
 
 // FIX: Use the correct FastAPI port (5000) and the /logs endpoint.
-const API_BASE = "http://127.0.0.1:5000";
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
 export function AuditLog({ backendLogs }: { backendLogs: BackendLog[] }) {
   const [logs, setLogs] = useState<LogEntry[]>([]);

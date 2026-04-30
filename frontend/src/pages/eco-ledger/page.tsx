@@ -13,7 +13,7 @@ import FloatingNav from "../../components/Floatingnav.tsx";
 
 /* ── API ── */
 
-const API_URL = "http://127.0.0.1:5000/get-status";
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
 type ApiData = {
   water: number;
@@ -107,7 +107,7 @@ export default function EcoLedger() {
 
   const handleMakeCall = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/make-call");
+      const res = await fetch(`${API_BASE}/make-call`);
       const data = await res.json();
       if (!res.ok || data.error) {
         console.error("Call trigger error:", data.error ?? `HTTP ${res.status}`);
@@ -121,7 +121,7 @@ export default function EcoLedger() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(`${API_BASE}/get-status`);
       const json = await res.json();
       console.log("LIVE:", json);
       setData(json);

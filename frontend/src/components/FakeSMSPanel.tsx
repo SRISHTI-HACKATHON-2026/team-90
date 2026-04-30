@@ -2,7 +2,7 @@ import { useState } from "react";
 
 type SendMode = "verified" | "observation";
 
-const BACKEND_URL = "http://127.0.0.1:5000/simulate-sms";
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 const RESOURCES = ["water", "waste", "energy"] as const;
 
 export default function FakeSMSPanel() {
@@ -19,7 +19,7 @@ export default function FakeSMSPanel() {
       const fallbackResource = RESOURCES[Math.floor(Math.random() * RESOURCES.length)];
       const selectedResource = mode === "verified" && resource ? resource : fallbackResource;
       const selectedValue = mode === "verified" && value !== undefined ? value : 120;
-      const url = `${BACKEND_URL}?resource=${selectedResource}&value=${selectedValue}`;
+      const url = `${API_BASE}/simulate-sms?resource=${selectedResource}&value=${selectedValue}`;
 
       await fetch(url);
 

@@ -87,7 +87,7 @@ export function getMockData(): MockData {
 
 /* ── LIVE DATA FROM BACKEND ── */
 
-const API_BASE = "http://127.0.0.1:5000";
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
 
 function valueToLevel(value: number): ResourceLevel {
   if (value <= 30) return "low";
